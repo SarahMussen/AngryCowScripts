@@ -466,7 +466,7 @@ public class GameManager : NetworkBehaviour
         {
             gameEnded = true;
             winner = false;
-            endGame();
+            StartCoroutine(endGame());
         }
 
     }
@@ -476,7 +476,7 @@ public class GameManager : NetworkBehaviour
 
         if (gameEnded)
         {
-            endGame();
+            StartCoroutine(endGame());
         }
         else
         {
@@ -576,7 +576,7 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void endGame()
+    IEnumerator endGame()
     {
         popUpCanvas.gameObject.SetActive(false);
         if (!isServer)
@@ -595,9 +595,19 @@ public class GameManager : NetworkBehaviour
                 endingTitle.text = "Je hebt gewonnen";
             }
         }
-        Time.timeScale = 0;
+        
         endingCanvas.gameObject.SetActive(true);
+
+        cowCanvas.gameObject.SetActive(false);
+        farmerCanvas.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(10);
+
+        endingCanvas.gameObject.SetActive(false);
+        restartGame();
+
     }
+
 
     public void restartGame()
     {
