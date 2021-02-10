@@ -295,10 +295,10 @@ public class GameManager : NetworkBehaviour
 
         updateScoreGUI();
 
-        if (catchedPoop == 1)
+        if (catchedPoop == 5)
         {
             itemsUnlocked++;
-            openPopUp(itemsUnlocked);
+            StartCoroutine(openPopUp(itemsUnlocked));
         }
     }
 
@@ -345,8 +345,12 @@ public class GameManager : NetworkBehaviour
         upgradeSlider.DOValue(upgradeSlider.value + 1, 1f).Play();
     }
 
-    private void openPopUp(int itemToUnlock)
+    IEnumerator openPopUp(int itemToUnlock)
     {
+        //disable canvas --> geen nieuwe stront afvuren
+        cowCanvas.gameObject.SetActive(false);
+        farmerCanvas.gameObject.SetActive(false);
+
         //show item on coin
         itemIcons[itemToUnlock - 1].texture = itemTextures[itemToUnlock - 1];
 
@@ -361,39 +365,13 @@ public class GameManager : NetworkBehaviour
 
         //Time.timeScale = 0;
 
-        //switch?
-        if (itemToUnlock == 1)
-        {
+        yield return new WaitForSeconds(10);
 
-            var matsBody = rendBody.materials;
-            matsBody[1] = blue;
-            rendBody.materials = matsBody;
+        ////sluit popup
+        closePopUp();
 
-            var matsLegLeft = rendLegLeft.materials;
-            matsLegLeft[0] = blue;
-            rendLegLeft.materials = matsLegLeft;
-
-            var matsLegRight = rendLegRight.materials;
-            matsLegRight[0] = blue;
-            rendLegRight.materials = matsLegRight;
-        }
-
-        if(itemToUnlock == 2)
-        {
-            toilet.SetActive(true);
-        }
-
-        if (itemToUnlock == 3)
-        {
-            toiletPaper.SetActive(true);
-        }
-
-        if (itemToUnlock == 4)
-        {
-            cowPot.SetActive(true);
-            gameEnded = true;
-            winner = true;
-        }
+        //show the unlocked items
+        showUnlockedItem(itemToUnlock);
     }
 
     private void TryScaleUpCanvas()
@@ -526,6 +504,43 @@ public class GameManager : NetworkBehaviour
         isScaling = false;
         popUpCanvas.gameObject.SetActive(false);
 
+    }
+
+    private void showUnlockedItem(int itemToUnlock)
+    {
+        //show unlock item in world
+        if (itemToUnlock == 1)
+        {
+
+            var matsBody = rendBody.materials;
+            matsBody[1] = blue;
+            rendBody.materials = matsBody;
+
+            var matsLegLeft = rendLegLeft.materials;
+            matsLegLeft[0] = blue;
+            rendLegLeft.materials = matsLegLeft;
+
+            var matsLegRight = rendLegRight.materials;
+            matsLegRight[0] = blue;
+            rendLegRight.materials = matsLegRight;
+        }
+
+        if (itemToUnlock == 2)
+        {
+            toilet.SetActive(true);
+        }
+
+        if (itemToUnlock == 3)
+        {
+            toiletPaper.SetActive(true);
+        }
+
+        if (itemToUnlock == 4)
+        {
+            cowPot.SetActive(true);
+            gameEnded = true;
+            winner = true;
+        }
     }
 
     public void startGame()
