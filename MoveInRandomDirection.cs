@@ -13,7 +13,7 @@ public class MoveInRandomDirection : NetworkBehaviour
     private float targetRangeMaxX = 5;
     private float targetRangeMinY = 5;
     private float targetRangeMaxY = 14;
-    private float targetPosZ = -6;
+    private float targetPosZ = -10;
 
     private Vector3 targetPosition;
 

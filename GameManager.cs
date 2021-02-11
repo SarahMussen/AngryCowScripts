@@ -26,6 +26,9 @@ public class GameManager : NetworkBehaviour
 
     private bool isScaling = false;
 
+    [SyncVar]
+    private bool isGameStartClicked;
+
     //TEST 
     [SerializeField]
     private TextMeshProUGUI missedPoopText;
@@ -225,17 +228,29 @@ public class GameManager : NetworkBehaviour
         enableSuperFireButton(false);
     }
 
+    void Update()
+    {
+        if (isGameStartClicked)
+        {
+            StartGame();
+        }
+    }
+
     public override void OnStartClient()
     {
-        if(!isServer)
-        {
+        Button startButton = cowIntroCanvas.transform.GetChild(3).GetComponent<Button>();
 
+        if (!isServer)
+        {
             farmerIntroCanvas.gameObject.SetActive(true);
             cowIntroCanvas.gameObject.SetActive(false);
 
             farmerCanvas.gameObject.SetActive(false);
             cowCanvas.gameObject.SetActive(false);
             pointer.SetActive(false);
+
+            startButton.interactable = false;
+
             /*//Set the canvas active or inactive
             farmerCanvas.gameObject.SetActive(true);
             cowCanvas.gameObject.SetActive(false);
@@ -261,11 +276,13 @@ public class GameManager : NetworkBehaviour
             superFireButton = cowCanvas.transform.GetChild(2).GetComponent<Button>();
             networkManager.setUIObjects(pointer, fireButton, superFireButton);*/
         }
+
+        isGameStartClicked = false;
     }
 
     public void setBodyOfFarmer(GameObject farmer)
-    { 
-        GameObject farmerChild = farmer.transform.GetChild(0).gameObject;
+    {
+        /*GameObject farmerChild = farmer.transform.GetChild(0).gameObject;
 
         farmerLegLeft = farmerChild.transform.GetChild(2).gameObject;
         rendLegLeft = farmerLegLeft.GetComponent<Renderer>();
@@ -274,6 +291,15 @@ public class GameManager : NetworkBehaviour
         rendLegRight = farmerLegRight.GetComponent<Renderer>();
 
         farmerBody = farmerChild.transform.GetChild(5).gameObject;
+        rendBody = farmerBody.GetComponent<Renderer>();*/
+
+        farmerLegLeft = farmer.transform.GetChild(3).gameObject;
+        rendLegLeft = farmerLegLeft.GetComponent<Renderer>();
+
+        farmerLegRight = farmer.transform.GetChild(5).gameObject;
+        rendLegRight = farmerLegRight.GetComponent<Renderer>();
+
+        farmerBody = farmer.transform.GetChild(0).gameObject;
         rendBody = farmerBody.GetComponent<Renderer>();
     }
 
@@ -305,6 +331,8 @@ public class GameManager : NetworkBehaviour
     public void addMissedPoop()
     {
         missedPoop++;
+
+        //TEST
         missedPoopText.text = "missed: " + missedPoop;
 
         if (!isServer)
@@ -313,18 +341,28 @@ public class GameManager : NetworkBehaviour
             missedBorder.DOFade(0f, .6f);
         }
 
+        //animatie TESTEN!!!!
+        //downgradeSlider.DOValue(downgradeSlider.value - 1, 1f).Play();
+        //note to self: waarom moet dit?
+        //downgradeSlider.value = downgradeSlider.value - 1;
+
+        superPoopSlider.DOValue(superPoopSlider.value + 1, 1f).Play();
         superPoopSlider.value++;
         //environmentslider farmer
+        downgradeSlider.DOValue(downgradeSlider.value - 1, 1f).Play();
         downgradeSlider.value--;
         //environmentslider cow
+        environmentslider.DOValue(environmentslider.value + 1, 1f).Play();
         environmentslider.value++;
 
-        if(missedPoop%5 == 0)
+
+        if (missedPoop%5 == 0)
         {
             updateDowngradeGUI();
             enableSuperFireButton(true);
 
             //superPoopSlider?
+            superPoopSlider.DOValue(0, 1f).Play();
             environmentslider.value = 0;
         }
     }
@@ -393,14 +431,12 @@ public class GameManager : NetworkBehaviour
 
     private void updateDowngradeGUI()
     {
-        downgradeSlider.DOValue(downgradeSlider.value - 1, 1f).Play();
-        //note to self: waarom moet dit?
-        downgradeSlider.value = downgradeSlider.value - 1;
+        
 
         switch (downgradeSlider.value)
         {
             //bloemen en gras
-            case 3:
+            case 10:
                 var matsRedFlower = rendRedFlower1.materials;
                 var matsPinkFlower = rendPinkFlower5.materials;
                 var matsPurpleFlower = rendPurpleFlower3.materials;
@@ -432,7 +468,7 @@ public class GameManager : NetworkBehaviour
                 break;
 
             //bomen
-            case 2:
+            case 5:
                 var matsAppleTree = rendAppleTree1.materials;
                 matsAppleTree[0] = applesBad;
                 matsAppleTree[1] = treeBad;
@@ -450,7 +486,7 @@ public class GameManager : NetworkBehaviour
                 break;
 
             //lucht en water
-            case 1:
+            case 0:
 
 
                 matsPlane = rendPlane.materials;
@@ -543,38 +579,29 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void startGame()
+   public void StartGame()
     {
-        //close canvas
-        cowIntroCanvas.gameObject.SetActive(false);
-        farmerIntroCanvas.gameObject.SetActive(false);
 
-        //start game
-        Time.timeScale = 1;
-
-        if (!isServer)
+        if (isServer)
         {
-
-            //Set the canvas active or inactive
-            farmerCanvas.gameObject.SetActive(true);
-            cowCanvas.gameObject.SetActive(false);
-            //Set pointer to inactive
-            pointer.SetActive(false);
-        }
-        else
-        {
-
-            //Set the canvas active or inactive
+            cowIntroCanvas.gameObject.SetActive(false);
             cowCanvas.gameObject.SetActive(true);
             farmerCanvas.gameObject.SetActive(false);
-            //Set pointer to active
-            pointer.SetActive(true);
+            isGameStartClicked = true;
 
             fireButton = cowCanvas.transform.GetChild(1).GetComponent<Button>();
             superFireButton = cowCanvas.transform.GetChild(2).GetComponent<Button>();
             networkManager.setUIObjects(pointer, fireButton, superFireButton);
         }
+        else
+        {
+            farmerIntroCanvas.gameObject.SetActive(false);
+            farmerCanvas.gameObject.SetActive(true);
+            cowCanvas.gameObject.SetActive(false);
+            pointer.SetActive(false);
+        }
     }
+   
 
     IEnumerator endGame()
     {
@@ -611,7 +638,6 @@ public class GameManager : NetworkBehaviour
 
     public void restartGame()
     {
-        Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 

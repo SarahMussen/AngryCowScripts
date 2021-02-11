@@ -18,7 +18,7 @@ public class MoveInDirection : NetworkBehaviour
 
     void Start()
     {
-        targetPosition = new Vector3(shootDirection.x, shootDirection.y, -6);
+        targetPosition = new Vector3(shootDirection.x, shootDirection.y, -10);
     }
 
     // Update is called once per frame
